@@ -2,6 +2,12 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Architect desgin
+
+- My Idea was to create a component which only take few inputs accroding to user need and provide output.
+- Number of rows to show , input value, searchQuery and output value
+- Need to add keyBoard Navigation for accessibility
+
 ## Available Scripts
 
 In the project directory, you can run:

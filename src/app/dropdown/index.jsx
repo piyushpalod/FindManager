@@ -1,11 +1,47 @@
-import React, { useState, useRef, useEffect } from "react";
-import "./styles.css"
+import React, { useState, useRef, useEffect, useReducer } from "react";
+import "./styles.css";
+import useKeyPress from "./useKeyPress";
 
 export default function Dropdown ({options, id, label, prompt, value, onChange}) {
 
+    function reducer(state, action) {
+        switch (action.type) {
+          case "arrowUp":
+            return {
+              selectedIndex:
+                state.selectedIndex !== 0 ? state.selectedIndex - 1 : options.length - 1
+            };
+          case "arrowDown":
+            return {
+              selectedIndex:
+                state.selectedIndex !== options.length - 1 ? state.selectedIndex + 1 : 0
+            };
+          case "select":
+            return { selectedIndex: action.payload };
+          default:
+            throw new Error();
+        }
+      }
+
+    const initialState = { selectedIndex: 0 };
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
     const ref = useRef(null);
+    const arrowUpPressed = useKeyPress("ArrowUp");
+    const arrowDownPressed = useKeyPress("ArrowDown");
+    const [state, dispatch] = useReducer(reducer, initialState);
+
+    useEffect(() => {
+        if (arrowUpPressed) {
+          dispatch({ type: "arrowUp" });
+        }
+      }, [arrowUpPressed]);
+    
+      useEffect(() => {
+        if (arrowDownPressed) {
+          dispatch({ type: "arrowDown" });
+        }
+      }, [arrowDownPressed]);
 
     useEffect(() => {
         document.addEventListener("click", close);
@@ -28,15 +64,30 @@ export default function Dropdown ({options, id, label, prompt, value, onChange})
     }
 
     return <div className="dropdown"> 
-        <div className="control" onClick={ () => setOpen((prev) => !prev)}>
+        <div className="control" onClick={ () => setOpen((prev) => !prev) }
+            tabIndex={0}
+                onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                    setOpen((prev) => !prev);
+                    e.target.blur();
+                    }
+                }}>
             <div className="selected-value">
                 <input type="text" ref={ref} 
                 placeholder={ value ? value[label] : prompt }
                 value= {displayValue()}
+                tabIndex={0}
+                onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                    setQuery("")
+                    setQuery(e.target.value)
+                    onChange(null)
+                    e.target.blur();
+                    }
+                }}
                 onChange={e => {
                     setQuery(e.target.value)
                     onChange(null)
-                    
                 }}
                 onClick={() => setOpen(prev => !prev)}/>
                 </div>
@@ -44,9 +95,19 @@ export default function Dropdown ({options, id, label, prompt, value, onChange})
         </div>
         <div className={ `options ${ open ? "open" : null}`}>
             {
-                filter(options).map(option => <div 
+                filter(options).map((option, i) => <div 
                 key={option[id]}    
                 className={ `option ${ value === option ? "selected" : null}`}
+                aria-pressed={i === state.selectedIndex}
+                tabIndex={0}
+                onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                    setQuery("")
+                    onChange(option)
+                    setOpen(false)
+                    e.target.blur();
+                    }
+                }}
                 onClick={ () => {
                     setQuery("")
                     onChange(option)

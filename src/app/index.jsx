@@ -19,10 +19,12 @@ export default function App() {
   }, [employeeData]);
 
   return <div className="container mt-5" style={{width: 200}}>
-    <Dropdown options={ employeeData } prompt="Select Manager..."
-    value={value}
-    id="id"
-    label="name"
-    onChange={val => setValue(val)}/>
-  </div>;
+    <Dropdown 
+      options={ employeeData } 
+      prompt="Select Manager..."
+      value={value}
+      id="id"
+      label="name"
+      onChange={ val => setValue(val) }/>
+    </div>;
 }
